@@ -28,7 +28,7 @@ export default function Navbar() {
     } catch (err) {
       console.log(err);
     }
-    
+
     if (!redirect && location.pathname === "/") prompt();
   }, []);
 
@@ -53,7 +53,7 @@ export default function Navbar() {
 
   async function initTokenClient(response) {
     console.log("response: " + response);
-    await sendAccessToken(response);
+    await sendAccessToken(user.email, response);
     setAccessToken(response);
   }
 
@@ -102,11 +102,11 @@ export default function Navbar() {
     });
   }
 
-  async function sendAccessToken(token) {
+  async function sendAccessToken(email, token) {
     try {
       await fetch("http://localhost:4000/contacts", {
         method: "POST",
-        body: JSON.stringify(token),
+        body: JSON.stringify({ email, token }),
         headers: { "Content-type": "application/json" },
       }).then((response) => console.log(response));
     } catch (err) {

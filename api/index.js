@@ -5,7 +5,6 @@ const cors = require("cors");
 const { google } = require("googleapis");
 const mongoose = require("mongoose");
 const User = require("./models/User");
-const Contacts = require("./models/Contacts");
 const app = express();
 
 app.use(cors());
@@ -42,14 +41,6 @@ async function listConnectionNames(auth) {
     console.log("No connections found.");
     return;
   }
-  console.log("Connections:");
-  connections.forEach((person) => {
-    if (person.names && person.names.length > 0) {
-      console.log(person.names[0].displayName);
-    } else {
-      console.log("No display name found for connection.");
-    }
-  });
   return connections;
 }
 
@@ -72,18 +63,35 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/contacts", async (req, res) => {
-  const token = req.body.access_token;
+  const email = req.body.email;
+  const token = req.body.token.access_token;
   console.log(token);
 
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: token });
 
-  const contacts = listConnectionNames(auth);
-  try {
-    await User.findOne({ email }).populate("Contacts");
-  } catch (err) {
-    console.log(err);
-  }
+  const contacts = await listConnectionNames(auth);
+  const contactNames = contacts.map((person) =>
+    person.names && person.names.length > 0
+      ? person.names[0].displayName
+      : "No display name found"
+  );
 
-  res.json({ message: "ok" });
+  try {
+    const user = await User.findOne({ email });
+
+    if (user) {
+      user.contacts = contactNames;
+      await user.save();
+      console.log("Contacts updated for user:", user);
+      res.json({ message: "Contacts updated successfully" });
+    } else {
+      console.log("User not found");
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error updating contacts:", error);
+    res.status(500).json({ error: "Failed to update contacts" });
+  }
 });
+
