@@ -1,0 +1,70 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0b168e;
+  border-bottom: 50px;
+  border-color: black;
+  padding: 8px;
+}
+
+.redirect {
+  text-decoration: none;
+  color: white;
+}
+
+.links .create-event,
+.links .your-events {
+  margin-right: 20px;
+  text-decoration: none;
+  color: #d0d0d0;
+  font-weight: bold;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-section button {
+  text-decoration: none;
+  color: white;
+  border: none;
+  box-sizing: border-box;
+  border-radius: 15px;
+  background-color: purple;
+  padding: 5px;
+  transition: all 0.3s ease 0s;
+}
+
+.user-section button:hover {
+  color: black;
+} 
+
+.user-section img {
+  border-color: #0b168e;
+  border-radius: 15px;
+  float: left;
+  max-height: 30px;
+  max-width: 30px;
+  height: 30px;
+  width: 30px;
+  padding: 5px;
+}
+
+.user-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-details p {
+  font-size: 15px;
+  color: white;
+}
