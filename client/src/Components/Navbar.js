@@ -2,7 +2,10 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+// import dotenv from 'dotenv';
 import "./CSS/Navbar.css";
+
+// dotenv.config();
 
 const google = window.google;
 
@@ -17,8 +20,7 @@ export default function Navbar() {
   useEffect(() => {
     try {
       google.accounts.id.initialize({
-        client_id:
-          "917027295365-qbqbva5va215316f2jveikl5hmlcfcij.apps.googleusercontent.com",
+        client_id: process.env.REACT_APP_CLIENT_ID,
         callback: handleCallbackResponse,
       });
       // google.accounts.id.renderButton(document.getElementById("signInDiv"), {
@@ -36,8 +38,7 @@ export default function Navbar() {
     async function handleRedirect() {
       try {
         const client = await google.accounts.oauth2.initTokenClient({
-          client_id:
-            "917027295365-qbqbva5va215316f2jveikl5hmlcfcij.apps.googleusercontent.com",
+          client_id: process.env.REACT_APP_CLIENT_ID,
           scope: "https://www.googleapis.com/auth/contacts.readonly",
           callback: initTokenClient,
         });
@@ -119,6 +120,7 @@ export default function Navbar() {
     setUser(null);
     prompt();
     setRedirect(false);
+    navigate("/");
   }
 
   return (

@@ -5,9 +5,13 @@ const cors = require("cors");
 const { google } = require("googleapis");
 const mongoose = require("mongoose");
 const User = require("./models/User");
+const Post = require("./models/Post");
+const multer = require("multer");
+const uploadMiddleware = multer({ dest: "uploads/" });
+const fs = require("fs");
 const app = express();
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -95,3 +99,17 @@ app.post("/contacts", async (req, res) => {
   }
 });
 
+app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
+  const { originalname, path } = req.file;
+  console.log(originalname + " " + path);
+  const newName = `uploads\\` + originalname;
+  fs.renameSync(path, newName);
+  const { title, description } = req.body;
+  console.log(req.body);
+  const postDoc = await Post.create({
+    title,
+    description,
+    cover: newName,
+  });
+  res.json(postDoc);
+});
