@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateEventsPage() {
   const [title, setTitle] = useState(null);
   const [description, setDescription] = useState(null);
   const [files, setFiles] = useState("");
-  const [redirect, setRedirect] = useState(false);
+  const navigate = useNavigate();
 
   async function createNewPost(ev) {
     ev.preventDefault();
@@ -15,24 +15,16 @@ export default function CreateEventsPage() {
     data.set("description", description);
     data.set("file", files[0]);
     console.log(files);
-    console.log(data);
     const response = await fetch("http://localhost:4000/post", {
       method: "POST",
       body: data,
-      // headers: {
-      //   // "Content-Type": "application/x-www-form-urlencoded",
-      //   "Content-Type": "multipart/form-data",
-      // },
     });
-    console.log(data.file);
-
+    console.log(response);
     if (response.ok) {
-      setRedirect(true);
+      navigate("/events/create/contacts");
     }
-
-    if (redirect) return <Navigate to={"/create/events/contacts"} />;
   }
-  
+
   return (
     <form onSubmit={createNewPost}>
       <h1>Event Information</h1>
