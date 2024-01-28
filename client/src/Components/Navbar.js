@@ -78,6 +78,7 @@ export default function Navbar() {
         method: "POST",
         body: JSON.stringify({ email, token }),
         headers: { "Content-type": "application/json" },
+        credentials: "include",
       }).then((response) => console.log(response));
     } catch (err) {
       console.log("Error while sending access token: " + err);

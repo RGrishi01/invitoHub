@@ -4,6 +4,7 @@ import "./CSS/EventInfoPage.css";
 
 export default function EventInfoPage() {
   const [post, setPost] = useState([]);
+  const [registeredContacts, setRegisteredContacts] = useState([]);
   const { post_id } = useParams();
   console.log(post_id);
 
@@ -14,6 +15,7 @@ export default function EventInfoPage() {
           method: "POST",
           body: JSON.stringify({ post_id }),
           headers: { "Content-type": "application/json" },
+          credentials: "include",
         });
         const data = await response.json();
         console.log(data);

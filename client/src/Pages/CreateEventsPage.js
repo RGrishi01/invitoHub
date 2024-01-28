@@ -21,6 +21,7 @@ export default function CreateEventsPage() {
     const response = await fetch("http://localhost:4000/post", {
       method: "POST",
       body: data,
+      credentials: "include",
     });
     console.log(response);
     if (response.ok) {

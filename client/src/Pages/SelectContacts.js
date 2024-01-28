@@ -17,6 +17,7 @@ export default function SelectContacts() {
           method: "POST",
           body: JSON.stringify({ email: userEmail }),
           headers: { "Content-type": "application/json" },
+          credentials: "include",
         })
           .then((res) => res.json())
           .then((data) => {
@@ -57,8 +58,9 @@ export default function SelectContacts() {
           email: userEmail,
         }),
         headers: { "Content-type": "application/json" },
+        credentials: "include",
       });
-      
+
       const data = await response.json();
       console.log(data);
       const post_id = data.post_id;

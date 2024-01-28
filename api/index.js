@@ -13,6 +13,7 @@ const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
+const cookieParser = require("cookie-parser");
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -25,6 +26,7 @@ app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 const port = 4000;
 app.listen(port, () => {
@@ -231,7 +233,7 @@ app.post("/send-contacts", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/your-events", authenticateToken, async (req, res) => {
+app.get("/your-events", async (req, res) => {
   try {
     const postDocs_host = await Post.find({ user_host: user_id });
     const postDocs_registered = await Post.find({ users_registered: user_id });
@@ -272,7 +274,7 @@ app.post("/send-details", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/get-public-events", authenticateToken, async (req, res) => {
+app.get("/get-public-events", async (req, res) => {
   const posts = await Post.find({ publicEvent: true });
   res.json(posts);
 });

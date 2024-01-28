@@ -17,6 +17,7 @@ export default function InvitedEvent() {
           method: "POST",
           body: JSON.stringify({ post_id: post_id }),
           headers: { "Content-type": "application/json" },
+          credentials: "include",
         });
         const data = await response.json();
         console.log(data);
@@ -36,6 +37,7 @@ export default function InvitedEvent() {
         method: "POST",
         body: JSON.stringify({ post_id: post_id, email: userEmail }),
         headers: { "Content-type": "application/json" },
+        credentials: "include",
       });
       const data = await response.json();
       console.log(data);
