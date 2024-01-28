@@ -22,15 +22,11 @@ export default function Navbar() {
         client_id: process.env.REACT_APP_CLIENT_ID,
         callback: getJWTToken,
       });
-      // google.accounts.id.renderButton(document.getElementById("signInDiv"), {
-      //   theme: "outline",
-      //   size: "large",
-      // });
     } catch (err) {
       console.log(err);
     }
 
-    if (!redirect && location.pathname === "/") prompt();
+    if (!redirect && !user) prompt();
   }, []);
 
   async function getJWTToken(response) {
@@ -42,7 +38,7 @@ export default function Navbar() {
         console.log(userObject);
         setUser(userObject);
         console.log("email: " + userObject.email);
-        await login(userObject.email);
+        await login(userObject.email, token);
       } else {
         console.log("Invalid JWT Token!");
       }
@@ -66,8 +62,9 @@ export default function Navbar() {
       }
     }
 
-    if (location.pathname === "/home" && accessToken === "") handleRedirect();
-  }, [location]);
+    if (location.pathname !== "/" && accessToken === "" && user)
+      handleRedirect();
+  }, [user, location]);
 
   async function getAccessToken(response) {
     console.log("response: " + response);
@@ -87,13 +84,14 @@ export default function Navbar() {
     }
   }
 
-  async function login(email) {
+  async function login(email, token) {
     setUserEmail(email);
     try {
       const response = await fetch("http://localhost:4000/login", {
         method: "POST",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email, token: token }),
         headers: { "Content-type": "application/json" },
+        credentials: "include",
       });
       if (response.ok === false) alert("login failed");
       else {
@@ -106,16 +104,26 @@ export default function Navbar() {
 
   if (redirect) {
     setRedirect(false);
-    navigate("/home");
+    if (location.pathname === "/") {
+      navigate("/home");
+    }
   }
 
-  function signOut() {
+  async function signOut() {
+    await fetch("http://localhost:4000/logout", {
+      credentials: "include",
+      method: "POST",
+    });
     setAccessToken("");
     setUser(null);
     setUserEmail("");
     prompt();
     setRedirect(false);
     navigate("/");
+  }
+
+  function signIn() {
+    prompt();
   }
 
   function prompt() {
@@ -128,7 +136,12 @@ export default function Navbar() {
     <div className="navbar">
       <div className="brand">
         <Link to="/home" className="redirect">
-          InvitoHub
+          <img
+            className="logo"
+            src={process.env.PUBLIC_URL + "./InvitohubLogo.png"}
+            alt=""
+            style={{ width: "100px" }}
+          />
         </Link>
       </div>
       <div className="links">
@@ -152,7 +165,17 @@ export default function Navbar() {
         {user && (
           <div className="user-details">
             <img src={user.picture} alt=""></img>
-            <p>{user.name}</p>
+          </div>
+        )}
+        {!user && (
+          <div className="sign-in">
+            <button
+              onClick={() => {
+                signIn();
+              }}
+            >
+              Sign In
+            </button>
           </div>
         )}
       </div>

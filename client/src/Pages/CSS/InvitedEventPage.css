@@ -1,0 +1,53 @@
+/* InvitedEvent.css */
+
+.efhe {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.ekwgfk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.elbflw {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.shgffh {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.eiwlhgfl {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.ewufge {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.ejkfg {
+  background-color: #28a745;
+  color: #fff;
+  padding: 12px 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.ejkfg:hover {
+  background-color: #218838;
+}

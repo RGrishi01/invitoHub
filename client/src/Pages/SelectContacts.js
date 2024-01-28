@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../Components/UserContext";
 import { useNavigate } from "react-router-dom";
+import "./CSS/SelectContacts.css";
 
 export default function SelectContacts() {
   const { userEmail } = useContext(UserContext);
@@ -57,23 +58,29 @@ export default function SelectContacts() {
         }),
         headers: { "Content-type": "application/json" },
       });
-      console.log(response);
-      if (response.ok) Navigate("/events/your-events");
+      
+      const data = await response.json();
+      console.log(data);
+      const post_id = data.post_id;
+      if (response.ok) Navigate(`/events/event-info/${post_id}`);
     } catch (err) {
       console.log("Error while posting selected contacts: ", err);
     }
   }
 
   return (
-    <div>
-      <p>Select Contacts</p>
-      <form onSubmit={handleOnSubmit}>
-        <button type="submit">Go Ahead</button>
-        <ul>
+    <div className="select-contacts">
+      <p className="p-select">Select Contacts</p>
+      <form className="ejkfh" onSubmit={handleOnSubmit}>
+        <button className="ieugfe" type="submit">
+          Go Ahead
+        </button>
+        <ul className="weughew">
           {contacts.map((item, index) => (
-            <li key={index}>
+            <li className="adjkfbaejk" key={index}>
               <label>
                 <input
+                  className="ejfbe"
                   type="checkbox"
                   onChange={() => {
                     handleCheckboxChange(index);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import "./CSS/YourEvents.css";
 
 export default function YourEvents() {
   const [posts, setPosts] = useState([]);
@@ -24,14 +25,13 @@ export default function YourEvents() {
   }, []);
 
   return (
-    <div>
-      <p>YourEvents</p>
+    <div className="container">
+      <p className="your-event-header">Your Events</p>
       {posts.map((post) => (
-        <div key={post._id}>
+        <div key={post._id} className="event">
           <img src={"http://localhost:4000/" + post.cover} alt="" />
-          <h3>{post.title}</h3>
-          <p>{post.description}</p>
-          {/* Add more details or components to display other post information */}
+          <h3 className="post-title">{post.title}</h3>
+          <p className="post-des">{post.description}</p>
         </div>
       ))}
     </div>

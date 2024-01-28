@@ -7,7 +7,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #0b168e;
+  background-color: #046380;
   border-bottom: 50px;
   border-color: black;
   padding: 8px;
@@ -20,7 +20,7 @@
 
 .links .create-event,
 .links .your-events {
-  margin-right: 20px;
+  margin-right: 40px;
   text-decoration: none;
   color: #d0d0d0;
   font-weight: bold;
@@ -32,7 +32,7 @@
   justify-content: space-between;
 }
 
-.user-section button {
+button {
   text-decoration: none;
   color: white;
   border: none;
@@ -45,16 +45,21 @@
 
 .user-section button:hover {
   color: black;
-} 
+}
+
+.logo img {
+  max-height: 50px;
+  max-width: auto;
+}
 
 .user-section img {
   border-color: #0b168e;
   border-radius: 15px;
   float: left;
-  max-height: 30px;
-  max-width: 30px;
-  height: 30px;
-  width: 30px;
+  max-height: 40px;
+  max-width: 40px;
+  height: 40px;
+  width: 40px;
   padding: 5px;
 }
 
@@ -62,9 +67,4 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.user-details p {
-  font-size: 15px;
-  color: white;
 }

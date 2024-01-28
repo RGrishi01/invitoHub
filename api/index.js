@@ -10,10 +10,17 @@ const multer = require("multer");
 const uploadMiddleware = multer({ dest: "uploads/" });
 const twilio = require("twilio");
 const fs = require("fs");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const app = express();
+
+const salt = bcrypt.genSaltSync(10);
 
 let user_id;
 let post_id;
+
+//Middlewares
+
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(express.json());
@@ -23,6 +30,8 @@ const port = 4000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+//Functions
 
 function connection() {
   try {
@@ -34,6 +43,17 @@ function connection() {
 }
 connection();
 
+function authenticateToken(req, res, next) {
+  const { token } = req.cookies;
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Forbidden" });
+    req.user = user;
+    next();
+  });
+}
+
 async function listConnectionNames(auth) {
   const service = google.people({
     version: "v1",
@@ -42,14 +62,13 @@ async function listConnectionNames(auth) {
   const res = await service.people.connections.list({
     resourceName: "people/me",
     pageSize: 1000,
-    personFields: "names,phoneNumbers",
+    personFields: "names,phoneNumbers,emailAddresses",
   });
   const connections = res.data.connections;
   if (!connections || connections.length === 0) {
     console.log("No connections found.");
     return;
   }
-  console.log(connections);
   return connections;
 }
 
@@ -68,8 +87,11 @@ function sendSMS(phoneNumber, message) {
     .catch((err) => console.log(err));
 }
 
+//Routes
+
 app.post("/login", async (req, res) => {
   const email = req.body.email;
+  const token = bcrypt.hashSync(req.body.token, salt);
   console.log(email);
   try {
     let userDoc = await User.findOne({ email });
@@ -80,14 +102,21 @@ app.post("/login", async (req, res) => {
       console.log("user logged in");
     }
     user_id = userDoc._id;
-    res.json(userDoc);
+    jwt.sign({ token }, process.env.JWT_SECRET, {}, (err, token) => {
+      if (err) throw err;
+      res.cookie("token", token).json(userDoc);
+    });
   } catch (e) {
     console.log(e);
     res.status(400).json(e);
   }
 });
 
-app.post("/get-contacts", async (req, res) => {
+app.post("/logout", (req, res) => {
+  res.cookie("token", "").json("ok");
+});
+
+app.post("/get-contacts", authenticateToken, async (req, res) => {
   const email = req.body.email;
   const token = req.body.token.access_token;
   console.log(token);
@@ -133,31 +162,37 @@ app.post("/get-contacts", async (req, res) => {
   }
 });
 
-app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
-  const { originalname, path } = req.file;
-  console.log(originalname + " " + path);
-  const newName = `uploads\\` + originalname;
-  fs.renameSync(path, newName);
-  const { title, description } = req.body;
-  console.log(req.body);
+app.post(
+  "/post",
+  authenticateToken,
+  uploadMiddleware.single("file"),
+  async (req, res) => {
+    const { originalname, path } = req.file;
+    console.log(originalname + " " + path);
+    const newName = `uploads\\` + originalname;
+    fs.renameSync(path, newName);
+    const { title, description, publicEvent } = req.body;
+    console.log(req.body);
 
-  try {
-    const postDoc = await Post.create({
-      user: user_id,
-      title,
-      description,
-      cover: newName,
-    });
-    post_id = postDoc._id;
-    console.log("Post created: ", postDoc, post_id);
-    res.json(postDoc);
-  } catch (err) {
-    console.log("Error while creating Post: " + err);
-    res.json(500).json({ error: "Failed to create post" });
+    try {
+      const postDoc = await Post.create({
+        user_host: user_id,
+        title,
+        description,
+        cover: newName,
+        publicEvent: publicEvent,
+      });
+      post_id = postDoc._id;
+      console.log("Post created: ", postDoc, post_id);
+      res.json(postDoc);
+    } catch (err) {
+      console.log("Error while creating Post: " + err);
+      res.status(400).json(err);
+    }
   }
-});
+);
 
-app.post("/select-contacts", async (req, res) => {
+app.post("/select-contacts", authenticateToken, async (req, res) => {
   const email = req.body.email;
   try {
     const user = await User.findOne({ email });
@@ -168,7 +203,7 @@ app.post("/select-contacts", async (req, res) => {
   }
 });
 
-app.post("/send-contacts", async (req, res) => {
+app.post("/send-contacts", authenticateToken, async (req, res) => {
   const data = req.body.selectedContacts;
   const email = req.body.email;
   console.log(data);
@@ -182,11 +217,13 @@ app.post("/send-contacts", async (req, res) => {
       for (let i of data) {
         console.log(contacts[i]);
         contactArray.push(contacts[i]);
-        // sendSMS(contacts[i], "Text");
+        const link = `http://localhost:3000/invited-event/${post_id}`;
+        // sendSMS(contacts[i], `Text: ${link}`);
       }
       const postDoc = await Post.findOne({ _id: post_id });
-      postDoc.contacts = contactArray;
-      res.json(data);
+      postDoc.users_invited.push(...contactArray);
+      await postDoc.save();
+      res.json({ post_id });
     }
   } catch (err) {
     console.log("Error while sending sms", err);
@@ -194,13 +231,60 @@ app.post("/send-contacts", async (req, res) => {
   }
 });
 
-app.get("/your-events", async (req, res) => {
+app.get("/your-events", authenticateToken, async (req, res) => {
   try {
-    const postDocs = await Post.find({ user: "65a6dfde4762fb0e3f1bf218"});
-    console.log(postDocs);
+    const postDocs_host = await Post.find({ user_host: user_id });
+    const postDocs_registered = await Post.find({ users_registered: user_id });
+    console.log(postDocs_host + postDocs_registered);
+    const postDocs = postDocs_host.concat(postDocs_registered);
     res.json(postDocs);
   } catch (err) {
     console.log("Error while fetching your events: ", err);
     res.json(err);
+  }
+});
+
+app.post("/invited-event", authenticateToken, async (req, res) => {
+  const data = req.body.post_id;
+  console.log(data);
+  try {
+    const postDoc = await Post.findOne({ _id: data });
+    res.json(postDoc);
+  } catch (err) {
+    console.log("Error while finding Invited Post: ", err);
+    res.status(400).json(err);
+  }
+});
+
+app.post("/send-details", authenticateToken, async (req, res) => {
+  const email = req.body.email;
+  const data = req.body.post_id;
+  console.log("data: ", data);
+  try {
+    const postDoc = await Post.findOne({ _id: data });
+    const userDoc = await User.findOne({ email });
+    postDoc.users_registered.push(userDoc._id);
+    await postDoc.save();
+    res.json("User posted");
+  } catch (err) {
+    console.log("Error while sending details: ", err);
+    res.status(400).json(err);
+  }
+});
+
+app.get("/get-public-events", authenticateToken, async (req, res) => {
+  const posts = await Post.find({ publicEvent: true });
+  res.json(posts);
+});
+
+app.post("/get-event-info", authenticateToken, async (req, res) => {
+  const data = req.body.post_id;
+  console.log(data);
+  try {
+    const postDoc = await Post.findOne({ _id: data });
+    res.json(postDoc);
+  } catch (err) {
+    console.log("Error while getting event info: ", err);
+    res.status(400).json(err);
   }
 });

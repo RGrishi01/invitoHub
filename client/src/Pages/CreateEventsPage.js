@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./CSS/CreateEventsPage.css";
 
 export default function CreateEventsPage() {
-  const [title, setTitle] = useState(null);
-  const [description, setDescription] = useState(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [files, setFiles] = useState("");
+  const [publicEvent, setPublicEvent] = useState(false);
   const navigate = useNavigate();
 
   async function createNewPost(ev) {
@@ -14,6 +16,7 @@ export default function CreateEventsPage() {
     data.set("title", title);
     data.set("description", description);
     data.set("file", files[0]);
+    data.set("publicEvent", publicEvent);
     console.log(files);
     const response = await fetch("http://localhost:4000/post", {
       method: "POST",
@@ -21,13 +24,27 @@ export default function CreateEventsPage() {
     });
     console.log(response);
     if (response.ok) {
-      navigate("/events/create/contacts");
+      if (publicEvent) navigate("/events/your-events");
+      else navigate("/events/create/contacts");
     }
+  }
+
+  async function togglePublicEvent() {
+    setPublicEvent((publicEvent) => !publicEvent);
   }
 
   return (
     <form onSubmit={createNewPost}>
       <h1>Event Information</h1>
+      <label>
+        <input
+          type="checkbox"
+          onChange={() => {
+            togglePublicEvent();
+          }}
+        />
+        Set as a Public Event
+      </label>
       <input
         type="text"
         id="title"

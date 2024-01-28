@@ -1,0 +1,35 @@
+/* StartingPage.css */
+
+.landing-container {
+  text-align: center;
+  padding: 50px;
+}
+
+header {
+  margin-bottom: 30px;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #333;
+}
+
+p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.cta-section {
+  margin-bottom: 40px;
+}
+
+.get-started-btn {
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
