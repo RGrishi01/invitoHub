@@ -254,9 +254,15 @@ app.post("/send-details", authenticateToken, async (req, res) => {
   try {
     const postDoc = await Post.findOne({ _id: data });
     const userDoc = await User.findOne({ email });
-    postDoc.users_registered.push(userDoc._id);
-    await postDoc.save();
-    res.json("User posted");
+    const alreadyRegistered = postDoc.users_registered.includes(userDoc._id);
+    if (!alreadyRegistered) {
+      postDoc.users_registered.push(userDoc._id);
+      await postDoc.save();
+      res.json({
+        message: "User posted: ",
+        details: userDoc._id,
+      });
+    } else res.json("user already exists");
   } catch (err) {
     console.log("Error while sending details: ", err);
     res.status(400).json(err);

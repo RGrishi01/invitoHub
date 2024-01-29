@@ -11,9 +11,7 @@ export default function AuthPage() {
 
       <section className="cta-section">
         <p>Discover, create, and connect with exciting events.</p>
-        <p>
-          Whether you're hosting a gathering or looking for the next big thing,
-        </p>
+        <p>Whether you're hosting a gathering or looking for the next big thing,</p>
         <p>InvitoHub is your go-to platform. Join the celebration!</p>
       </section>
     </div>

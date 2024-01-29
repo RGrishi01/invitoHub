@@ -52,11 +52,7 @@ export default function InvitedEvent() {
       <p className="efhe">You have been invited to: </p>
       <form className="ekwgfk" onSubmit={sendDetails}>
         <div className="elbflw" key={posts._id}>
-          <img
-            className="shgffh"
-            src={"http://localhost:4000/" + posts.cover}
-            alt=""
-          />
+          <img className="shgffh" src={"http://localhost:4000/" + posts.cover} alt="" />
           <h3 className="eiwlhgfl">{posts.title}</h3>
           <p className="ewufge">{posts.description}</p>
           {/* Add more details or components to display other post information */}

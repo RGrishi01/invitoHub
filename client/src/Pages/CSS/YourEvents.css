@@ -1,4 +1,4 @@
-/* Add this CSS to your stylesheets or components */
+/* Refined styles for a more similar design */
 
 body {
   font-family: Arial, sans-serif;
@@ -20,14 +20,15 @@ body {
   font-size: 2rem;
   color: #333;
   font-weight: bold;
-
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .event {
-  max-width: 300px;
+  max-width: 600px;
   margin: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   overflow: hidden;
   background-color: #fff;
 }
@@ -35,17 +36,17 @@ body {
 .event img {
   width: 100%;
   height: auto;
-  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
 }
 
 .event h3 {
-  font-size: 24px;
-  margin: 15px;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
   color: #333;
 }
 
 .event p {
-  font-size: 16px;
-  margin: 0 15px 15px;
-  color: #666;
+  font-size: 1rem;
+  color: #555;
+  margin: 0 20px 20px;
 }

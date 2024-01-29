@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./CSS/HomePage.css";
+import { Link } from "react-router-dom";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
@@ -24,13 +25,19 @@ export default function HomePage() {
     <>
       <h1>Public Posts</h1>
       <div className="container">
-        {posts.map((post) => (
-          <div key={post._id} className="post">
-            <img src={"http://localhost:4000/" + post.cover} alt="" />
-            <h3 className="post-title">{post.title}</h3>
-            <p className="post-des">{post.description}</p>
-          </div>
-        ))}
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <div key={post._id} className="post">
+              <img src={"http://localhost:4000/" + post.cover} alt="" />
+              <Link to={`/invited-event/${post._id}`} className="post-title">
+                {post.title}
+              </Link>
+              <p className="post-des">{post.description}</p>
+            </div>
+          ))
+        ) : (
+          <div>No Public Posts Available</div>
+        )}
       </div>
     </>
   );

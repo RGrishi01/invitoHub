@@ -20,7 +20,6 @@ export default function EventInfoPage() {
         const data = await response.json();
         console.log("postdoc: ", data);
         setPost(data);
-        // setRegisteredContacts(data.users_registered);
         console.log("registered contacts: ", data.users_registered);
       } catch (err) {
         console.log("Error while fetching event info: ", err);
@@ -42,7 +41,7 @@ export default function EventInfoPage() {
         });
         const data = await response.json();
         console.log("registered contact names:", data);
-        setRegisteredContacts(data);
+        if (Array.isArray(data)) setRegisteredContacts(data);
       } catch (err) {
         console.log("Error while fetching registered contact names: ", err);
       }
@@ -58,16 +57,21 @@ export default function EventInfoPage() {
         <img className="kejfgewjl" src={"http://localhost:4000/" + post.cover} alt="" />
         <h3 className="afhelahf">{post.title}</h3>
         <p className="aelifheal">{post.description}</p>
-        <h3>Registered Contacts: </h3>
-        <br />
-        <ul>
-          {registeredContacts &&
-            registeredContacts.map((contact) => (
-              <li>
-                <p>{contact}</p>
-              </li>
-            ))}
-        </ul>
+        {registeredContacts.length > 0 ? (
+          <>
+            <h3>Registered Contacts: </h3>
+            <br />
+            <ul>
+              {registeredContacts.map((contact) => (
+                <li>
+                  <p>{contact}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p>No Registered Contacts yet</p>
+        )}
       </div>
     </div>
   );
