@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./CSS/YourEvents.css";
+import { Link } from "react-router-dom";
 
 export default function YourEvents() {
   const [posts, setPosts] = useState([]);
@@ -21,7 +22,7 @@ export default function YourEvents() {
       }
     }
 
-    getPosts();
+    if (posts.length === 0) getPosts();
   }, []);
 
   return (
@@ -30,7 +31,9 @@ export default function YourEvents() {
       {posts.map((post) => (
         <div key={post._id} className="event">
           <img src={"http://localhost:4000/" + post.cover} alt="" />
-          <h3 className="post-title">{post.title}</h3>
+          <Link to={`/events/event-info/${post._id}`} className="post-title">
+            {post.title}
+          </Link>
           <p className="post-des">{post.description}</p>
         </div>
       ))}

@@ -38,7 +38,7 @@ export default function Navbar() {
         console.log(userObject);
         setUser(userObject);
         console.log("email: " + userObject.email);
-        await login(userObject.email, token);
+        await login(userObject.name, userObject.email, token);
       } else {
         console.log("Invalid JWT Token!");
       }
@@ -62,8 +62,7 @@ export default function Navbar() {
       }
     }
 
-    if (location.pathname !== "/" && accessToken === "" && user)
-      handleRedirect();
+    if (location.pathname !== "/" && accessToken === "" && user) handleRedirect();
   }, [user, location]);
 
   async function getAccessToken(response) {
@@ -85,12 +84,12 @@ export default function Navbar() {
     }
   }
 
-  async function login(email, token) {
+  async function login(name, email, token) {
     setUserEmail(email);
     try {
       const response = await fetch("http://localhost:4000/login", {
         method: "POST",
-        body: JSON.stringify({ email: email, token: token }),
+        body: JSON.stringify({ name: name, email: email, token: token }),
         headers: { "Content-type": "application/json" },
         credentials: "include",
       });

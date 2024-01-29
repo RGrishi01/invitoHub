@@ -75,10 +75,7 @@ async function listConnectionNames(auth) {
 }
 
 function sendSMS(phoneNumber, message) {
-  const client = new twilio(
-    process.env.TWILIO_SID,
-    process.env.TWILIO_AUTH_TOKEN
-  );
+  const client = new twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
   return client.messages
     .create({
       body: message,
@@ -93,12 +90,13 @@ function sendSMS(phoneNumber, message) {
 
 app.post("/login", async (req, res) => {
   const email = req.body.email;
+  const name = req.body.name;
   const token = bcrypt.hashSync(req.body.token, salt);
   console.log(email);
   try {
     let userDoc = await User.findOne({ email });
     if (!userDoc) {
-      userDoc = await User.create({ email });
+      userDoc = await User.create({ name: name, email: email });
       console.log("user registered");
     } else {
       console.log("user logged in");
@@ -129,9 +127,7 @@ app.post("/get-contacts", authenticateToken, async (req, res) => {
   const contacts = await listConnectionNames(auth);
 
   const contactNames = contacts.map((person) =>
-    person.names && person.names.length > 0
-      ? person.names[0].displayName
-      : "No display name found"
+    person.names && person.names.length > 0 ? person.names[0].displayName : "No display name found"
   );
 
   const contactNumbers = contacts.map((person) =>
@@ -164,35 +160,30 @@ app.post("/get-contacts", authenticateToken, async (req, res) => {
   }
 });
 
-app.post(
-  "/post",
-  authenticateToken,
-  uploadMiddleware.single("file"),
-  async (req, res) => {
-    const { originalname, path } = req.file;
-    console.log(originalname + " " + path);
-    const newName = `uploads\\` + originalname;
-    fs.renameSync(path, newName);
-    const { title, description, publicEvent } = req.body;
-    console.log(req.body);
+app.post("/post", authenticateToken, uploadMiddleware.single("file"), async (req, res) => {
+  const { originalname, path } = req.file;
+  console.log(originalname + " " + path);
+  const newName = `uploads\\` + originalname;
+  fs.renameSync(path, newName);
+  const { title, description, publicEvent } = req.body;
+  console.log(req.body);
 
-    try {
-      const postDoc = await Post.create({
-        user_host: user_id,
-        title,
-        description,
-        cover: newName,
-        publicEvent: publicEvent,
-      });
-      post_id = postDoc._id;
-      console.log("Post created: ", postDoc, post_id);
-      res.json(postDoc);
-    } catch (err) {
-      console.log("Error while creating Post: " + err);
-      res.status(400).json(err);
-    }
+  try {
+    const postDoc = await Post.create({
+      user_host: user_id,
+      title,
+      description,
+      cover: newName,
+      publicEvent: publicEvent,
+    });
+    post_id = postDoc._id;
+    console.log("Post created: ", postDoc, post_id);
+    res.json(postDoc);
+  } catch (err) {
+    console.log("Error while creating Post: " + err);
+    res.status(400).json(err);
   }
-);
+});
 
 app.post("/select-contacts", authenticateToken, async (req, res) => {
   const email = req.body.email;
@@ -215,15 +206,13 @@ app.post("/send-contacts", authenticateToken, async (req, res) => {
       res.json("no such user found");
     } else {
       const contacts = user.contacts.phoneNumbers;
-      const contactArray = [];
       for (let i of data) {
         console.log(contacts[i]);
-        contactArray.push(contacts[i]);
         const link = `http://localhost:3000/invited-event/${post_id}`;
         // sendSMS(contacts[i], `Text: ${link}`);
       }
       const postDoc = await Post.findOne({ _id: post_id });
-      postDoc.users_invited.push(...contactArray);
+      postDoc.users_invited.push(...contacts);
       await postDoc.save();
       res.json({ post_id });
     }
@@ -235,10 +224,10 @@ app.post("/send-contacts", authenticateToken, async (req, res) => {
 
 app.get("/your-events", async (req, res) => {
   try {
-    const postDocs_host = await Post.find({ user_host: user_id });
-    const postDocs_registered = await Post.find({ users_registered: user_id });
-    console.log(postDocs_host + postDocs_registered);
-    const postDocs = postDocs_host.concat(postDocs_registered);
+    const postDocs = await Post.find({
+      $or: [{ user_host: user_id }, { users_registered: user_id }],
+    });
+    console.log(postDocs);
     res.json(postDocs);
   } catch (err) {
     console.log("Error while fetching your events: ", err);
@@ -288,5 +277,27 @@ app.post("/get-event-info", authenticateToken, async (req, res) => {
   } catch (err) {
     console.log("Error while getting event info: ", err);
     res.status(400).json(err);
+  }
+});
+
+app.post("/get-registered-contact-names", authenticateToken, async (req, res) => {
+  const data = req.body.registeredContacts;
+  console.log(data);
+  try {
+    let registeredContactNames = [];
+    for (let userId of data) {
+      let temp = await User.findOne({ _id: userId });
+      console.log("temp: ", temp);
+      if (temp) {
+        registeredContactNames.push(temp.name);
+      }
+    }
+    console.log(registeredContactNames);
+    res.json(registeredContactNames);
+  } catch (err) {
+    res.status(500).json({
+      error: "Error while fetching registered contact names",
+      details: err,
+    });
   }
 });
