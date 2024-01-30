@@ -206,13 +206,15 @@ app.post("/send-contacts", authenticateToken, async (req, res) => {
       res.json("no such user found");
     } else {
       const contacts = user.contacts.phoneNumbers;
+      const contactArray = [];
       for (let i of data) {
         console.log(contacts[i]);
+        contactArray.push(contacts[i]);
         const link = `http://localhost:3000/invited-event/${post_id}`;
         // sendSMS(contacts[i], `Text: ${link}`);
       }
       const postDoc = await Post.findOne({ _id: post_id });
-      postDoc.users_invited.push(...contacts);
+      postDoc.users_invited.push(...contactArray);
       await postDoc.save();
       res.json({ post_id });
     }
@@ -225,7 +227,7 @@ app.post("/send-contacts", authenticateToken, async (req, res) => {
 app.get("/your-events", async (req, res) => {
   try {
     const postDocs = await Post.find({
-      $or: [{ user_host: user_id }, { users_registered: user_id }],
+      $or: [{ user_host: user_id }, { "attendees.users_registered": user_id }],
     });
     console.log(postDocs);
     res.json(postDocs);
@@ -254,9 +256,9 @@ app.post("/send-details", authenticateToken, async (req, res) => {
   try {
     const postDoc = await Post.findOne({ _id: data });
     const userDoc = await User.findOne({ email });
-    const alreadyRegistered = postDoc.users_registered.includes(userDoc._id);
+    const alreadyRegistered = postDoc.attendees.includes({ users_registered: userDoc._id });
     if (!alreadyRegistered) {
-      postDoc.users_registered.push(userDoc._id);
+      postDoc.attendees.push({ users_registered: userDoc._id });
       await postDoc.save();
       res.json({
         message: "User posted: ",
@@ -287,7 +289,7 @@ app.post("/get-event-info", authenticateToken, async (req, res) => {
 });
 
 app.post("/get-registered-contact-names", authenticateToken, async (req, res) => {
-  const data = req.body.registeredContacts;
+  const data = req.body.registeredContactsId;
   console.log(data);
   try {
     let registeredContactNames = [];
@@ -305,5 +307,22 @@ app.post("/get-registered-contact-names", authenticateToken, async (req, res) =>
       error: "Error while fetching registered contact names",
       details: err,
     });
+  }
+});
+
+app.post("/rsvp", authenticateToken, async (req, res) => {
+  const data = req.body.attending;
+  const postid = req.body.post_id;
+  console.log(data);
+  try {
+    const postDoc = await Post.findOneAndUpdate(
+      { _id: postid, "attendees.users_registered": user_id },
+      { $set: { "attendees.$.rsvp": data } },
+      { new: true }
+    );
+    res.json({ message: "RSVP updated successfully", postDoc });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
   }
 });

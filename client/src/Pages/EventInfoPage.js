@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./CSS/EventInfoPage.css";
+import { UserContext } from "../Components/UserContext";
 
 export default function EventInfoPage() {
   const [post, setPost] = useState([]);
+  const [registeredContactsId, setRegisteredContactsId] = useState([]);
   const [registeredContacts, setRegisteredContacts] = useState([]);
+  // const [attending, setAttending] = useState(true);
+  const { userId } = useContext(UserContext);
   const { post_id } = useParams();
   console.log("parameter post id: ", post_id);
 
@@ -20,7 +24,7 @@ export default function EventInfoPage() {
         const data = await response.json();
         console.log("postdoc: ", data);
         setPost(data);
-        console.log("registered contacts: ", data.users_registered);
+        setRegisteredContactsId(data.attendees.map((attendee) => attendee.users_registered));
       } catch (err) {
         console.log("Error while fetching event info: ", err);
       }
@@ -30,12 +34,12 @@ export default function EventInfoPage() {
   }, [post_id]);
 
   useEffect(() => {
-    async function getRegisteredContacts(registeredContacts) {
+    async function getRegisteredContacts(registeredContactsId) {
       try {
         console.log("inside");
         const response = await fetch("http://localhost:4000/get-registered-contact-names", {
           method: "POST",
-          body: JSON.stringify({ registeredContacts }),
+          body: JSON.stringify({ registeredContactsId }),
           credentials: "include",
           headers: { "Content-type": "application/json" },
         });
@@ -47,8 +51,35 @@ export default function EventInfoPage() {
       }
     }
 
-    getRegisteredContacts(post.users_registered);
+    getRegisteredContacts(registeredContactsId);
   }, [post]);
+
+  async function handleAttending() {
+    try {
+      fetchRequest();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function handleNotAttending() {
+    try {
+      fetchRequest(false);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function fetchRequest(attending) {
+    const response = await fetch("http://localhost:4000/rsvp", {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ attending, post_id }),
+      headers: { "Content-type": "application/json" },
+    });
+    const data = await response.json();
+    console.log(data);
+  }
 
   return (
     <div>
@@ -62,9 +93,19 @@ export default function EventInfoPage() {
             <h3>Registered Contacts: </h3>
             <br />
             <ul>
-              {registeredContacts.map((contact) => (
+              {registeredContacts.map((contact, index) => (
                 <li>
                   <p>{contact}</p>
+                  {registeredContactsId[index] === userId && (
+                    <div className="eugfuew">
+                      <button onClick={() => handleAttending()} className="attending">
+                        Attending
+                      </button>
+                      <button onClick={() => handleNotAttending()} className="not-attending">
+                        Not Attending
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

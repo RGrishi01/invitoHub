@@ -11,7 +11,7 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [redirect, setRedirect] = useState(false);
   const [accessToken, setAccessToken] = useState("");
-  const { setUserEmail } = useContext(UserContext);
+  const { setUserEmail, setUserId } = useContext(UserContext);
   let location = useLocation();
   console.log(location.pathname);
   const navigate = useNavigate();
@@ -93,9 +93,12 @@ export default function Navbar() {
         headers: { "Content-type": "application/json" },
         credentials: "include",
       });
+      const data = await response.json();
       if (response.ok === false) alert("login failed");
       else {
         setRedirect(true);
+        console.log(data._id);
+        setUserId(data._id);
       }
     } catch (err) {
       console.log("Error while making post request: " + err);

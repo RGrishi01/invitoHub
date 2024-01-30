@@ -8,7 +8,12 @@ const PostSchema = new Schema({
   cover: { type: String, required: true },
   users_invited: [{ type: String, required: true }],
   publicEvent: { type: Boolean, default: false },
-  users_registered: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  attendees: [
+    {
+      users_registered: { type: Schema.Types.ObjectId, ref: "User" },
+      rsvp: { type: Boolean, default: true },
+    },
+  ],
 });
 
 const PostModel = model("Post", PostSchema);
